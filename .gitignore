@@ -1,0 +1,15 @@
+# Environment Variables
+.env
+
+# Python
+__pycache__/
+venv/
+*.pyc
+
+# Reports and Images
+*.md
+!README.md
+*.png
+
+# System
+.DS_Store

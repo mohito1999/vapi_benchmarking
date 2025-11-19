@@ -1,0 +1,8 @@
+streamlit
+requests
+python-dotenv
+tqdm
+numpy
+matplotlib
+python-dateutil
+watchdog
