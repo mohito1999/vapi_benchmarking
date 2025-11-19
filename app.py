@@ -58,148 +58,152 @@ context = st.text_area("Report Context / Configuration Differences", placeholder
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    if st.button("🚀 Run Benchmark", type="primary", use_container_width=True):
-        if not vapi_key or not openrouter_key:
-            st.error("Please provide both API keys.")
-            st.stop()
-
-        # Save config to temporary .env or pass via env vars
-        env = os.environ.copy()
-        env["VAPI_API_KEY"] = vapi_key
-        env["OPENROUTER_API_KEY"] = openrouter_key
-        
-        # Update env vars for the subprocess
-        env["AGENT_A_PHONE_NUMBER"] = agent_a_phone
-        env["AGENT_A_PHONE_NUMBER_ID"] = agent_a_id
-        env["AGENT_A_ID"] = agent_a_asst_id
-        env["AGENT_B_PHONE_NUMBER"] = agent_b_phone
-        env["AGENT_B_PHONE_NUMBER_ID"] = agent_b_id
-        env["AGENT_B_ID"] = agent_b_asst_id
-        env["AGENT_C_ASSISTANT_ID"] = agent_c_asst_id
-        env["AGENT_C_PHONE_NUMBER_ID"] = agent_c_phone_id
-        env["BATCH_SIZE"] = str(batch_size)
-
-        # Progress UI
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-        log_area = st.empty()
-        
-        logs = []
-        
-        def update_logs(line):
-            logs.append(line)
-            # Keep only last 15 lines for cleaner UI
-            log_text = "\\n".join(logs[-15:])
-            log_area.code(log_text, language="text")
-
-        # Run the script
-        cmd = ["python", "-u", "benchmark.py", "--calls", str(num_calls), "--context", context]
-        
-        try:
-            process = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                env=env,
-                bufsize=1,
-                universal_newlines=True
-            )
-            
-            # Monitor output
-            while True:
-                line = process.stdout.readline()
-                if not line and process.poll() is not None:
-                    break
-                if line:
-                    line = line.strip()
-                    if line: # Skip empty lines
-                        update_logs(line)
-
-            if process.returncode == 0:
-                st.success("Benchmark Complete!")
-                
-                # Find the most recent report file
-                try:
-                    list_of_files = glob.glob('benchmark_report_*.md') 
-                    if list_of_files:
-                        latest_file = max(list_of_files, key=os.path.getctime)
-                        
-                        with open(latest_file, "r") as f:
-                            report_content = f.read()
-                        
-                        st.markdown(report_content)
-                        
-                        if os.path.exists("latency_comparison.png"):
-                            st.image("latency_comparison.png", caption="Latency Distribution")
-                    else:
-                        st.warning("No report file found.")
-                except Exception as e:
-                    st.error(f"Error loading report: {e}")
-                    
-                # Also check for diff report if it was generated
-                try:
-                    list_of_diffs = glob.glob('diff_report_*.md')
-                    if list_of_diffs:
-                        latest_diff = max(list_of_diffs, key=os.path.getctime)
-                        # Only show if it's recent (e.g. created in last minute)
-                        if os.path.getctime(latest_diff) > time.time() - 60:
-                            with open(latest_diff, "r") as f:
-                                diff_content = f.read()
-                            st.markdown("---")
-                            st.subheader("Configuration Diff")
-                            st.markdown(diff_content)
-                except:
-                    pass
-
-            else:
-                st.error("Benchmark failed. Check logs.")
-                
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
+    run_benchmark = st.button("🚀 Run Benchmark", type="primary", use_container_width=True)
 
 with col2:
-    if st.button("⚖️ Compare Assistants Only", use_container_width=True):
-        if not vapi_key:
-            st.error("Please provide Vapi API Key.")
-            st.stop()
-            
-        if not agent_a_asst_id or not agent_b_asst_id:
-            st.error("Please provide both Assistant IDs (Agent A & Agent B).")
-            st.stop()
-            
-        st.info("Fetching assistant details and generating diff...")
+    run_diff = st.button("⚖️ Compare Assistants Only", use_container_width=True)
+
+if run_benchmark:
+    if not vapi_key or not openrouter_key:
+        st.error("Please provide both API keys.")
+        st.stop()
+
+    # Save config to temporary .env or pass via env vars
+    env = os.environ.copy()
+    env["VAPI_API_KEY"] = vapi_key
+    env["OPENROUTER_API_KEY"] = openrouter_key
+    
+    # Update env vars for the subprocess
+    env["AGENT_A_PHONE_NUMBER"] = agent_a_phone
+    env["AGENT_A_PHONE_NUMBER_ID"] = agent_a_id
+    env["AGENT_A_ID"] = agent_a_asst_id
+    env["AGENT_B_PHONE_NUMBER"] = agent_b_phone
+    env["AGENT_B_PHONE_NUMBER_ID"] = agent_b_id
+    env["AGENT_B_ID"] = agent_b_asst_id
+    env["AGENT_C_ASSISTANT_ID"] = agent_c_asst_id
+    env["AGENT_C_PHONE_NUMBER_ID"] = agent_c_phone_id
+    env["BATCH_SIZE"] = str(batch_size)
+
+    # Progress UI
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    log_area = st.empty()
+    
+    logs = []
+    
+    def update_logs(line):
+        logs.append(line)
+        # Keep only last 15 lines for cleaner UI
+        log_text = "\n".join(logs[-15:])
+        log_area.code(log_text, language="text")
+
+    # Run the script
+    cmd = ["python", "-u", "benchmark.py", "--calls", str(num_calls), "--context", context]
+    
+    try:
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            env=env,
+            bufsize=1,
+            universal_newlines=True
+        )
         
-        env = os.environ.copy()
-        env["VAPI_API_KEY"] = vapi_key
-        env["AGENT_A_ID"] = agent_a_asst_id
-        env["AGENT_B_ID"] = agent_b_asst_id
-        
-        cmd = ["python", "-u", "diff_tool.py"]
-        
-        try:
-            result = subprocess.run(cmd, capture_output=True, text=True, env=env)
+        # Monitor output
+        while True:
+            line = process.stdout.readline()
+            if not line and process.poll() is not None:
+                break
+            if line:
+                line = line.strip()
+                if line: # Skip empty lines
+                    update_logs(line)
+
+        if process.returncode == 0:
+            st.success("Benchmark Complete!")
             
-            if result.returncode == 0:
-                st.success("Diff generated successfully!")
+            # Find the most recent report file
+            try:
+                list_of_files = glob.glob('benchmark_report_*.md') 
+                if list_of_files:
+                    latest_file = max(list_of_files, key=os.path.getctime)
+                    
+                    with open(latest_file, "r") as f:
+                        report_content = f.read()
+                    
+                    st.markdown(report_content)
+                    
+                    if os.path.exists("latency_comparison.png"):
+                        st.image("latency_comparison.png", caption="Latency Distribution")
+                else:
+                    st.warning("No report file found.")
+            except Exception as e:
+                st.error(f"Error loading report: {e}")
                 
-                # Find the most recent diff report
-                try:
-                    list_of_files = glob.glob('diff_report_*.md') 
-                    if list_of_files:
-                        latest_file = max(list_of_files, key=os.path.getctime)
-                        
-                        with open(latest_file, "r") as f:
-                            report_content = f.read()
-                        
-                        st.markdown(report_content)
-                    else:
-                        st.warning("No diff report found.")
-                except Exception as e:
-                    st.error(f"Error loading report: {e}")
-            else:
-                st.error("Diff generation failed.")
-                st.code(result.stderr)
-                st.code(result.stdout)
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
+            # Also check for diff report if it was generated
+            try:
+                list_of_diffs = glob.glob('diff_report_*.md')
+                if list_of_diffs:
+                    latest_diff = max(list_of_diffs, key=os.path.getctime)
+                    # Only show if it's recent (e.g. created in last minute)
+                    if os.path.getctime(latest_diff) > time.time() - 60:
+                        with open(latest_diff, "r") as f:
+                            diff_content = f.read()
+                        st.markdown("---")
+                        st.subheader("Configuration Diff")
+                        st.markdown(diff_content)
+            except:
+                pass
+
+        else:
+            st.error("Benchmark failed. Check logs.")
+            
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
+
+if run_diff:
+    if not vapi_key:
+        st.error("Please provide Vapi API Key.")
+        st.stop()
+        
+    if not agent_a_asst_id or not agent_b_asst_id:
+        st.error("Please provide both Assistant IDs (Agent A & Agent B).")
+        st.stop()
+        
+    st.info("Fetching assistant details and generating diff...")
+    
+    env = os.environ.copy()
+    env["VAPI_API_KEY"] = vapi_key
+    env["AGENT_A_ID"] = agent_a_asst_id
+    env["AGENT_B_ID"] = agent_b_asst_id
+    
+    cmd = ["python", "-u", "diff_tool.py"]
+    
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, env=env)
+        
+        if result.returncode == 0:
+            st.success("Diff generated successfully!")
+            
+            # Find the most recent diff report
+            try:
+                list_of_files = glob.glob('diff_report_*.md') 
+                if list_of_files:
+                    latest_file = max(list_of_files, key=os.path.getctime)
+                    
+                    with open(latest_file, "r") as f:
+                        report_content = f.read()
+                    
+                    st.markdown(report_content)
+                else:
+                    st.warning("No diff report found.")
+            except Exception as e:
+                st.error(f"Error loading report: {e}")
+        else:
+            st.error("Diff generation failed.")
+            st.code(result.stderr)
+            st.code(result.stdout)
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
