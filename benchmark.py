@@ -31,7 +31,7 @@ AGENT_B_PHONE_NUMBER_ID = os.getenv("AGENT_B_PHONE_NUMBER_ID", "41d665b4-8f80-4e
 
 # AGENT C (Caller)
 AGENT_C_ASSISTANT_ID = os.getenv("AGENT_C_ASSISTANT_ID", "778ee932-963b-40e8-beb3-a240653e30f8")
-AGENT_C_PHONE_NUMBER_ID = os.getenv("AGENT_C_PHONE_NUMBER_ID", "3ab4d340-58b7-4eae-aa47-41942429f524")
+AGENT_C_PHONE_NUMBER_ID = os.getenv("AGENT_C_PHONE_NUMBER_ID", "80c50b31-b903-40d4-bd11-fd278dfa9711")
 
 # Default Batch Size 5 to respect 10 concurrency limit (5 outbound + 5 inbound)
 BATCH_SIZE = int(os.getenv("BATCH_SIZE", 5))
