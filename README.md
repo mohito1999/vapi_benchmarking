@@ -9,6 +9,7 @@ A powerful Streamlit-based tool for benchmarking and comparing the performance o
 - **Detailed Metrics**: Analyzes Vapi-reported latencies (Mean, P50, P95) and breaks them down by component (LLM, TTS, ASR, Endpointing).
 - **Smart Filtering**: Automatically excludes calls that are too short (<45s) or have insufficient turns (<=2).
 - **AI Reports**: Generates comprehensive markdown reports with executive summaries and detailed per-turn analysis.
+- **Assistant Diff Tool**: Compare the JSON configurations of two assistants to pinpoint differences.
 - **History**: Automatically saves timestamped reports for historical tracking.
 
 ## Prerequisites
@@ -58,10 +59,12 @@ You can configure the tool via the UI every time you run it, but it is highly re
     # Agent A (Control)
     AGENT_A_PHONE_NUMBER=+15550000001
     AGENT_A_PHONE_NUMBER_ID=uuid-for-agent-a
+    AGENT_A_ID=uuid-for-assistant-a  # Optional: For Diff Tool
 
     # Agent B (Test)
     AGENT_B_PHONE_NUMBER=+15550000002
     AGENT_B_PHONE_NUMBER_ID=uuid-for-agent-b
+    AGENT_B_ID=uuid-for-assistant-b  # Optional: For Diff Tool
 
     # Caller Agent
     AGENT_C_ASSISTANT_ID=uuid-for-caller-assistant
@@ -108,3 +111,27 @@ You can configure the tool via the UI every time you run it, but it is highly re
 -   `benchmark.py`: The core logic script that handles API calls, batching, and reporting.
 -   `requirements.txt`: Python dependencies.
 -   `benchmark_report_*.md`: Generated benchmark reports.
+-   `diff_tool.py`: Standalone script for comparing assistant configurations.
+-   `diff_report_*.md`: Generated assistant configuration diff reports.
+
+## Assistant Diff Tool
+
+This project includes a tool to compare the JSON configurations of two Vapi assistants. This helps identify exactly what changed between "Agent A" and "Agent B".
+
+### Usage
+
+**Via Streamlit UI:**
+1.  Enter the **Assistant IDs** for Agent A and Agent B in the sidebar.
+2.  Click the **⚖️ Compare Assistants Only** button.
+3.  The diff report will be displayed below the buttons.
+
+**Via Command Line:**
+```bash
+python diff_tool.py --id1 <assistant-id-1> --id2 <assistant-id-2>
+```
+Or, if you have `AGENT_A_ID` and `AGENT_B_ID` set in your `.env` file:
+```bash
+python diff_tool.py
+```
+
+The tool generates a `diff_report_YYYYMMDD_HHMMSS.md` file highlighting the differences.
