@@ -12,6 +12,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from datetime import datetime, timezone, timedelta
 import dateutil.parser
+import diff_tool  # [NEW] Import diff tool
 
 # --- Configuration ---
 load_dotenv()
@@ -28,6 +29,10 @@ AGENT_A_PHONE_NUMBER_ID = os.getenv("AGENT_A_PHONE_NUMBER_ID", "802718d4-04d4-43
 # AGENT B (Proposed)
 AGENT_B_PHONE_NUMBER = os.getenv("AGENT_B_PHONE_NUMBER", "+19847339758")
 AGENT_B_PHONE_NUMBER_ID = os.getenv("AGENT_B_PHONE_NUMBER_ID", "fc35e136-b766-474d-a461-70185bc2a2c0")
+
+# Assistant IDs for Diff
+AGENT_A_ID = os.getenv("AGENT_A_ID")
+AGENT_B_ID = os.getenv("AGENT_B_ID")
 
 # AGENT C (Caller)
 AGENT_C_ASSISTANT_ID = os.getenv("AGENT_C_ASSISTANT_ID", "778ee932-963b-40e8-beb3-a240653e30f8")
@@ -420,6 +425,23 @@ def main():
         return
 
     generate_report(results_a, results_b, args.context)
+
+    # [NEW] Run Assistant Diff if IDs are available
+    if AGENT_A_ID and AGENT_B_ID:
+        print("\n🔍 Running Assistant Configuration Diff...")
+        try:
+            a_data = diff_tool.get_assistant_details(AGENT_A_ID)
+            b_data = diff_tool.get_assistant_details(AGENT_B_ID)
+            if a_data and b_data:
+                diff_lines = diff_tool.generate_diff(a_data, b_data)
+                report = diff_tool.format_diff_report(diff_lines, a_data, b_data)
+                diff_tool.save_report(report)
+            else:
+                print("⚠️ Could not fetch assistant details for diff.")
+        except Exception as e:
+            print(f"⚠️ Assistant diff failed: {e}")
+    elif not AGENT_A_ID or not AGENT_B_ID:
+        print("\nℹ️ Skipping Assistant Diff (AGENT_A_ID or AGENT_B_ID missing).")
 
 
 if __name__ == "__main__":
