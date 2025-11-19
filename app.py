@@ -32,15 +32,15 @@ with st.sidebar:
     
     # Agent B
     st.subheader("Agent B (Test)")
-    agent_b_phone = st.text_input("Phone Number", value=os.getenv("AGENT_B_PHONE_NUMBER", "+14436379041"))
-    agent_b_id = st.text_input("Phone ID", value=os.getenv("AGENT_B_PHONE_NUMBER_ID", "41d665b4-8f80-4efd-8d6e-f121fada5ae7"))
+    agent_b_phone = st.text_input("Phone Number", value=os.getenv("AGENT_B_PHONE_NUMBER", "+19847339758"))
+    agent_b_id = st.text_input("Phone ID", value=os.getenv("AGENT_B_PHONE_NUMBER_ID", "fc35e136-b766-474d-a461-70185bc2a2c0"))
     
     st.divider()
     
     # Agent C (Caller)
     st.subheader("Caller Agent")
     agent_c_asst_id = st.text_input("Assistant ID", value=os.getenv("AGENT_C_ASSISTANT_ID", "778ee932-963b-40e8-beb3-a240653e30f8"))
-    agent_c_phone_id = st.text_input("Phone ID", value=os.getenv("AGENT_C_PHONE_NUMBER_ID", "3ab4d340-58b7-4eae-aa47-41942429f524"))
+    agent_c_phone_id = st.text_input("Phone ID", value=os.getenv("AGENT_C_PHONE_NUMBER_ID", "80c50b31-b903-40d4-bd11-fd278dfa9711"))
 
     st.divider()
     
